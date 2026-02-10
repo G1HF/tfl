@@ -1,0 +1,253 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{pgfplots}
+\geometry{a4paper, margin=1in}
+
+\title{Лабораторная работа №4}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Контекстная свобода}
+
+Для начала заметим, что возможно лишь 2 перехода по $S$, при том эти переходы рекурсивно не содержат ее, потому подставим в правило $T \rightarrow a S T$ 2 возможных $S$. Тогда вместо этого правило будет 2 новых:
+\begin{align*}
+& T \rightarrow a a b T,\quad T_1.a < 2,\quad T_0.a := T_1.a + 3, \\
+& T \rightarrow a b T a a T T,\quad T_1.a + T_2.a + 2 > T_3.a,\quad T_0.a := T_1.a + T_2.a + T_3.a + 3.
+\end{align*}
+
+Также заметим, что у нас значение атрибута становится не больше двух только лишь при использовании правил 3 и 5, исходя из преобразованного правила 2. Также в новом правиле $T \rightarrow a a b T$ можно отдельно рассмотреть случай с равенством атрибута 0 и 1.
+
+Далее заметим, что в $S$ атрибуты перестали играть какую-то роль, потому допустимо их и вовсе убрать из него. В конечном счете получим эквивалентную грамматику:
+\begin{align*}
+& S \rightarrow a b \\
+& S \rightarrow b T a a T \\
+& T \rightarrow b^* b a,\quad T.a := 0 \\
+& T \rightarrow a,\quad T.a := 1 \\
+& T \rightarrow a a b b b^* a,\quad T.a := 3 \\
+& T \rightarrow a a b a,\quad T.a := 4 \\
+& T \rightarrow b T,\quad T_1.a \ge 2,\quad T_0.a := T_1.a + 1 \\
+& T \rightarrow a b T a a T T,\quad T_1.a + T_2.a + 2 > T_3.a,\quad T_0.a := T_1.a + T_2.a + T_3.a + 3
+\end{align*}
+
+Покажем, что последнее правило способствует порождению не КС-языка. По факту достаточно рассмотреть слова вида 
+\[
+a b a a b a a a b T_1' a a a T_3' T_3
+\] 
+(атрибуты подберем погранично, чтобы они удовлетворяли погранично неравенству и при накачках можно было в нужную сторону их изменить), тогда накачка отдельных компонент со штрихами выведет $T_2$ из языка, если синхронно, то нулевой накачкой выводим все слово из языка. Отдельные накачки $T_1$ и $T_3$ очевидно выводят из языка.
+
+Тогда, исходя из этого, слово для накачки будем таким:
+\[
+a b a a b a a a b b^n a a b a a a a b^{(n+2)} a a b a b^{(2n+11)} a a b a
+\]
+Пересечем с соответствующим регулярным выражением и тогда, накачивая, как описано выше, можно во всех случаях вывести слово из языка.
+
+Поэтому язык не является КС.
+
+\section{Оптимизированный парсер}
+
+Будем работать с новой грамматикой. Так как возможно только 2 перехода по $S$, один из которых тривиален, то задача сводится к рассмотрению возможных $T$.
+
+Посмотрим на префикс: он будет определять правило, по которому надо делать разбор. Приоритет отдаем регулярным выражениям, так как они были ранее выделены в отдельные случаи, которые никак не пересекаются с остальными.
+
+Далее, если слово начинается не на \texttt{ab}, то по предпоследнему правилу убираем слева \texttt{b}, не забывая про условия на атрибут. Если начинается на \texttt{ab}, то исходя из возможных расположений \texttt{aa} выбираем один $T$ слева и два справа, которые рекурсивно обрабатываем.
+
+\section{Оценка вычислительной сложности}
+
+В худшем сценарии цепочки вызовов образуют полное дерево разбора:
+
+\begin{itemize}
+    \item Внешний цикл в \texttt{parse\_S} перебирает $O(n)$ позиций для поиска \texttt{"aa"}
+    \item Для каждой позиции выполняются два вызова \texttt{parse\_T} сложностью $T(k)$ и $T(m)$
+    \item Каждый вызов \texttt{parse\_T} в худшем случае (правило $T \rightarrow a b T a a T T$) имеет:
+    \begin{itemize}
+        \item Цикл по позициям \texttt{"aa"}: $O(n)$
+        \item Вложенный цикл по разбиениям: $O(n)$
+        \item Три рекурсивных вызова: $T(k) + T(m) + T(p)$
+    \end{itemize}
+\end{itemize}
+
+Верхняя граница сложности определяется произведением:
+\[
+O(n) \times O(n) \times O(n) = O(n^3)
+\]
+где:
+\begin{itemize}
+    \item Первый множитель $O(n)$ — внешний цикл в \texttt{parse\_S}
+    \item Второй множитель $O(n)$ — поиск \texttt{"aa"} в \texttt{parse\_T}
+    \item Третий множитель $O(n)$ — перебор разбиений в правиле $T \rightarrow a b T a a T T$
+\end{itemize}
+
+Таким образом, оптимизированный парсер имеет кубическую сложность $O(n^3)$ в худшем случае.
+
+\section{Тестирование}
+
+Для проверки эффективности предложенного алгоритма было проведено тестирование на двух типах данных:
+\begin{itemize}
+    \item словах, принадлежащих языку;
+    \item словах, не принадлежащих языку.
+\end{itemize}
+
+Для каждой длины измерялось время выполнения двух алгоритмов:
+\begin{itemize}
+    \item обычного парсера;
+    \item оптимизированного парсера, описанного в разделе 2.
+\end{itemize}
+
+Результаты представлены на графиках ниже (значения времени приведены в миллисекундах).
+
+\begin{figure}[h!]
+\centering
+\begin{minipage}{0.48\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    title={Обычный парсер: слова из языка},
+    xlabel={Длина строки $n$},
+    ylabel={Время $t$, мс},
+    xmin=0, xmax=100,
+    ymin=0, ymax=151,
+    xtick={10,37,56,72,96},
+    ytick={0,10,50,100,150},
+    legend style={at={(0.5,-0.2)}, anchor=north},
+    grid=both,
+    width=\textwidth,
+    height=0.8\textwidth
+]
+
+% Обычный парсер для слов из языка (синий)
+\addplot[
+    color=blue,
+    mark=triangle,
+    mark size=3pt,
+    thick
+]
+coordinates {
+    (10, 7.62)(37, 13.25)(56, 26.74)(72, 62.36)(96, 146.34)
+};
+\addlegendentry{Обычный парсер}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Время разбора для слов из языка (обычный парсер)}
+\label{fig:ordinary_in_lang}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    title={Оптимизированный парсер: слова из языка},
+    xlabel={Длина строки $n$},
+    ylabel={Время $t$, мс},
+    xmin=0, xmax=100,
+    ymin=0, ymax=151,
+    xtick={10,37,56,72,96},
+    ytick={0,10,50,100,150},
+    legend style={at={(0.5,-0.2)}, anchor=north},
+    grid=both,
+    width=\textwidth,
+    height=0.8\textwidth
+]
+
+% Оптимизированный парсер для слов из языка (красный)
+\addplot[
+    color=red,
+    mark=square,
+    mark size=3pt,
+    thick
+]
+coordinates {
+    (10, 4.37)(37, 6.34)(56, 10.19)(72, 22.56)(96, 37.94)
+};
+\addlegendentry{Оптимизированный парсер}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Время разбора для слов из языка (оптимизированный парсер)}
+\label{fig:optimized_in_lang}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+\begin{minipage}{0.48\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    title={Обычный парсер: слова не из языка},
+    xlabel={Длина строки $n$},
+    ylabel={Время $t$, мс},
+    xmin=0, xmax=100,
+    ymin=0, ymax=60,
+    xtick={20,40,60,80,100},
+    ytick={0.5,1,10,20,50},
+    legend style={at={(0.5,-0.2)}, anchor=north},
+    grid=both,
+    width=\textwidth,
+    height=0.8\textwidth
+]
+
+% Обычный парсер для слов не из языка (синий)
+\addplot[
+    color=blue,
+    mark=triangle,
+    mark size=3pt,
+    thick
+]
+coordinates {
+    (20, 10.52)(40, 50.21)(60, 0.27)(80, 0.23)(100, 0.33)
+};
+\addlegendentry{Обычный парсер}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Время разбора для слов не из языка (обычный парсер)}
+\label{fig:ordinary_not_in_lang}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    title={Оптимизированный парсер: слова не из языка},
+    xlabel={Длина строки $n$},
+    ylabel={Время $t$, мс},
+    xmin=0, xmax=100,
+    ymin=0, ymax=3,
+    xtick={20,40,60,80,100},
+    ytick={0.05,0.1,0.5,1,2},
+    legend style={at={(0.5,-0.2)}, anchor=north},
+    legend style={at={(0.5,-0.2)}, anchor=north},
+    grid=both,
+    width=\textwidth,
+    height=0.8\textwidth
+]
+
+% Оптимизированный парсер для слов не из языка (красный)
+\addplot[
+    color=red,
+    mark=square,
+    mark size=3pt,
+    thick
+]
+coordinates {
+    (20, 2.05)(40, 1.69)(60, 0.24)(80, 0.20)(100, 0.33)
+};
+\addlegendentry{Оптимизированный парсер}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Время разбора для слов не из языка (оптимизированный парсер)}
+\label{fig:optimized_not_in_lang}
+\end{minipage}
+\end{figure}
+
+\end{document}
