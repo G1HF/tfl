@@ -1,0 +1,219 @@
+\documentclass[12pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[russian]{babel}
+
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+
+\geometry{margin=2cm}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  columns=fullflexible,
+  breaklines=true,
+  frame=single
+}
+
+\title{Лабораторная работа 2\\(вариант 1)}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{1. Исходное регулярное выражение}
+
+Алфавит: $\Sigma=\{a,b\}$.
+
+Регулярное выражение:
+\[
+R = \big((a|b)^\ast\,abb\,(a|b)\big)\;|\;\big((a|ba)^\ast\,bb\,(a^\ast b)^\ast\,aba\,(a|b)\big).
+\]
+
+\section*{2. НКА}
+
+Построенный НКА изображён на рис.~\ref{fig:nfa}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{NFA.png}
+    \caption{НКА}
+    \label{fig:nfa}
+\end{figure}
+
+\subsection*{2.1. Таблица префиксов и суффиксов НКА}
+
+\begin{table}[H]
+\centering
+\small
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lccccccc}
+\toprule
+ & ba & $\varepsilon$ & bba & b & abab & babaa & abba \\
+\midrule
+bab   & 1 & 0 & 0 & 0 & 0 & 1 & 1 \\
+abba  & 0 & 1 & 1 & 0 & 0 & 1 & 1 \\
+a     & 0 & 0 & 1 & 0 & 0 & 0 & 1 \\
+abb   & 0 & 0 & 0 & 1 & 1 & 1 & 1 \\
+bb    & 0 & 0 & 0 & 0 & 1 & 1 & 1 \\
+b     & 0 & 0 & 0 & 0 & 0 & 1 & 1 \\
+$\varepsilon$ & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\
+\bottomrule
+\end{tabular}
+\caption{Таблица префиксов и суффиксов НКА}
+\end{table}
+
+
+
+\section*{3. ДКА и минимизация}
+
+На рис.~\ref{fig:dfa} показан минимальный ДКА.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\linewidth]{DFA.png}
+\caption{минимальный ДКА}
+\label{fig:dfa}
+\end{figure}
+
+\subsection*{3.1. Классы эквивалентности}
+
+Отметим классы эквивалентности: рис.~\ref{fig:eq}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\linewidth]{EQ.png}
+\caption{Минимальный ДКА}
+\label{fig:eq}
+\end{figure}
+
+\subsection*{3.2. Проверка минимальности}
+
+Построим таблицу эквивалентности.
+Если все строки различны, то состояния попарно различны, значит ДКА минимален.
+
+\begin{table}[H]
+\centering
+\tiny
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lccccccccc}
+\toprule
+ & $\varepsilon$ & a & aa & abaa & abba & ba & baa & babaa & bba \\
+\midrule
+$\varepsilon$ & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\
+a            & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 1 \\
+b            & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 0 \\
+ab           & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 1 & 0 \\
+abb          & 0 & 1 & 0 & 1 & 1 & 0 & 0 & 1 & 0 \\
+abba         & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 \\
+abbb         & 1 & 0 & 0 & 1 & 1 & 0 & 0 & 1 & 0 \\
+bb           & 0 & 0 & 0 & 1 & 1 & 0 & 0 & 1 & 0 \\
+bba          & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 1 \\
+bbaa         & 0 & 0 & 0 & 0 & 1 & 0 & 1 & 1 & 1 \\
+bbaab        & 0 & 0 & 0 & 1 & 1 & 1 & 0 & 1 & 0 \\
+bbab         & 0 & 0 & 1 & 1 & 1 & 1 & 0 & 1 & 0 \\
+bbaba        & 0 & 1 & 0 & 0 & 1 & 0 & 1 & 1 & 1 \\
+bbabaa       & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 1 \\
+bbabab       & 1 & 0 & 1 & 1 & 1 & 1 & 1 & 1 & 0 \\
+\bottomrule
+\end{tabular}
+\caption{Таблица различимости}
+\end{table}
+
+Все строки различны, значит он минимален.
+
+\section*{4. Расширенное регулярное выражение и ПКА}
+
+\subsection*{4.1. Расширенная регулярка}
+
+Исходное выражение:
+\[
+R = \big((a|b)^\ast\,abb\,(a|b)\big)\;\;|\;\;\big((a|ba)^\ast\,bb\,(a^\ast b)^\ast\,aba\,(a|b)\big).
+\]
+
+Перепишем его в расширенном виде:
+\[
+R \;=\; \texttt{\^{}(.*((?<=abb)|(?=bb).*(?<=baba)).)\$}
+\]
+
+Внешняя структура имеет вид
+\[
+.* \; \alpha \; .
+\]
+Первая часть \texttt{.*} задаёт произвольный префикс слова.
+Последний символ \texttt{.} соответствует одному произвольному символу алфавита.
+
+Внутреннее выражение содержит две альтернативы.
+
+\medskip
+\textbf{Первая альтернатива:} \texttt{(?<=abb)}.
+Она требует, чтобы непосредственно перед текущей позицией
+стояло подслово \texttt{abb}.
+Поскольку далее следует последний символ,
+всё слово оканчивается на \texttt{abbx},
+где $x \in \{a,b\}$.
+То есть, его суффикс равен \texttt{abba} или \texttt{abbb}.
+
+\medskip
+\textbf{Вторая альтернатива:} \texttt{(?=bb).*(?<=baba)}.
+
+Конструкция \texttt{(?=bb)} требует, чтобы начиная с текущей позиции
+в слове стояло подслово \texttt{bb}.
+Тем самым фиксируется существование некоторого вхождения \texttt{bb}.
+
+После этого допускается произвольная последовательность символов \texttt{.*},
+а затем \texttt{(?<=baba)} требует, чтобы непосредственно перед последним символом стояло подслово \texttt{baba}.
+
+Следовательно, во второй альтернативе слово
+обязательно содержит подслово \texttt{bb}
+и оканчивается на \texttt{babax}, где $x \in \{a,b\}$.
+
+\medskip
+Таким образом, язык состоит из всех слов над $\{a,b\}$,
+которые либо имеют суффикс \texttt{abb(a|b)},
+либо содержат подслово \texttt{bb}
+и одновременно имеют суффикс \texttt{baba(a|b)}.
+
+\subsection*{4.2. ПКА}
+
+ПКА для того же языка изображён на рис.~\ref{fig:afa}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{AFA.png}
+\caption{ПКА}
+\label{fig:afa}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\small
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lcccccc}
+\toprule
+ & $\varepsilon$ & a & abaa & ba & baa & babaa \\
+\midrule
+bb   & 0 & 1 & 1 & 1 & 1 & 1 \\
+bab  & 0 & 0 & 1 & 1 & 1 & 1 \\
+b    & 0 & 0 & 0 & 1 & 1 & 1 \\
+baba & 0 & 0 & 0 & 0 & 1 & 1 \\
+ba   & 0 & 0 & 0 & 0 & 0 & 1 \\
+a    & 0 & 0 & 0 & 0 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\caption{Таблица префиксов и суффиксов для ПКА}
+\end{table}
+
+
+
+\end{document}
